@@ -1,0 +1,561 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URODZINY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --acid-green: #b6ff00;
+      --hot-pink: #ff2d78;
+      --electric-blue: #00f0ff;
+      --orange: #ff6a00;
+      --bg: #050505;
+      --text: #f0f0f0;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    /* Animated background blobs */
+    .bg-blobs {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      animation: drift linear infinite;
+    }
+
+    .blob-1 {
+      width: 600px; height: 600px;
+      background: var(--acid-green);
+      top: -200px; left: -100px;
+      animation-duration: 22s;
+    }
+    .blob-2 {
+      width: 500px; height: 500px;
+      background: var(--hot-pink);
+      bottom: -150px; right: -100px;
+      animation-duration: 18s;
+      animation-direction: reverse;
+    }
+    .blob-3 {
+      width: 400px; height: 400px;
+      background: var(--electric-blue);
+      top: 40%; left: 50%;
+      animation-duration: 26s;
+    }
+    .blob-4 {
+      width: 300px; height: 300px;
+      background: var(--orange);
+      top: 20%; right: 10%;
+      animation-duration: 14s;
+      animation-direction: reverse;
+    }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      25%  { transform: translate(40px, 60px) scale(1.05); }
+      50%  { transform: translate(-30px, 100px) scale(0.95); }
+      75%  { transform: translate(60px, 30px) scale(1.08); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+
+    /* Scanlines */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 3px,
+        rgba(0,0,0,0.07) 3px,
+        rgba(0,0,0,0.07) 4px
+      );
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Main layout */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    /* Header / nav */
+    nav {
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0;
+      animation: fadeIn 0.6s ease 0.2s forwards;
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.3em;
+      color: var(--acid-green);
+      text-shadow: 0 0 12px var(--acid-green);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      color: var(--text);
+      text-decoration: none;
+      opacity: 0.5;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .nav-links a:hover {
+      opacity: 1;
+      color: var(--hot-pink);
+    }
+
+    /* Hero */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      gap: 2rem;
+    }
+
+    .eyebrow {
+      font-size: 0.65rem;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--electric-blue);
+      opacity: 0;
+      animation: fadeIn 0.6s ease 0.4s forwards;
+    }
+
+    .title-wrap {
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 18vw, 16rem);
+      line-height: 0.88;
+      letter-spacing: -0.01em;
+      position: relative;
+    }
+
+    .h1-main {
+      display: block;
+      color: var(--text);
+      -webkit-text-stroke: 1px rgba(255,255,255,0.15);
+    }
+
+    .h1-accent {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 2px var(--acid-green);
+      text-shadow:
+        0 0 60px rgba(182,255,0,0.3),
+        0 0 120px rgba(182,255,0,0.1);
+      animation: glitch 8s infinite;
+    }
+
+    @keyframes glitch {
+      0%, 94%, 100% { transform: none; clip-path: none; }
+      95% {
+        transform: translate(-3px, 0);
+        clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+        color: var(--hot-pink);
+        -webkit-text-stroke-color: var(--hot-pink);
+      }
+      96% {
+        transform: translate(3px, 0);
+        clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+      }
+      97% { transform: none; clip-path: none; }
+    }
+
+    /* Ghost / chromatic aberration text */
+    .h1-accent::before,
+    .h1-accent::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      color: transparent;
+    }
+    .h1-accent::before {
+      -webkit-text-stroke: 1px var(--hot-pink);
+      transform: translate(-2px, 1px);
+      opacity: 0.4;
+    }
+    .h1-accent::after {
+      -webkit-text-stroke: 1px var(--electric-blue);
+      transform: translate(2px, -1px);
+      opacity: 0.4;
+    }
+
+    /* Info card */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      max-width: 680px;
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.08);
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 1s forwards;
+    }
+
+    .info-cell {
+      background: rgba(5,5,5,0.85);
+      backdrop-filter: blur(20px);
+      padding: 1.8rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: background 0.3s;
+    }
+
+    .info-cell:hover {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .info-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--hot-pink);
+      opacity: 0.8;
+    }
+
+    .info-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .info-value span {
+      display: block;
+      font-weight: 400;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      margin-top: 0.15rem;
+    }
+
+    /* CTA */
+    .cta-wrap {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+      opacity: 0;
+      animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 1.2s forwards;
+    }
+
+    .btn-primary {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--bg);
+      background: var(--acid-green);
+      padding: 1rem 2.5rem;
+      border: none;
+      cursor: crosshair;
+      position: relative;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 30px rgba(182,255,0,0.3);
+    }
+
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border: 1px solid var(--acid-green);
+      opacity: 0;
+      transition: opacity 0.2s, inset 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--hot-pink), 0 0 40px rgba(182,255,0,0.5);
+    }
+
+    .btn-primary:hover::after {
+      opacity: 1;
+      inset: 3px;
+    }
+
+    .btn-secondary {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      background: none;
+      border: none;
+      cursor: crosshair;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-color: rgba(255,255,255,0.2);
+      transition: color 0.2s;
+    }
+
+    .btn-secondary:hover { color: var(--electric-blue); }
+
+    /* Ticker */
+    .ticker-wrap {
+      overflow: hidden;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 1rem 0;
+      opacity: 0;
+      animation: fadeIn 0.6s ease 1.6s forwards;
+    }
+
+    .ticker {
+      display: flex;
+      white-space: nowrap;
+      animation: ticker 25s linear infinite;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.2);
+      gap: 0;
+    }
+
+    .ticker-item {
+      padding: 0 3rem;
+      flex-shrink: 0;
+    }
+
+    .ticker-dot {
+      color: var(--hot-pink);
+      margin: 0 0.5rem;
+    }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* Decorative corner elements */
+    .corner {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      z-index: 20;
+      opacity: 0.3;
+    }
+    .corner-tl { top: 1.5rem; left: 1.5rem; border-top: 1px solid var(--acid-green); border-left: 1px solid var(--acid-green); }
+    .corner-tr { top: 1.5rem; right: 1.5rem; border-top: 1px solid var(--acid-green); border-right: 1px solid var(--acid-green); }
+    .corner-bl { bottom: 1.5rem; left: 1.5rem; border-bottom: 1px solid var(--acid-green); border-left: 1px solid var(--acid-green); }
+    .corner-br { bottom: 1.5rem; right: 1.5rem; border-bottom: 1px solid var(--acid-green); border-right: 1px solid var(--acid-green); }
+
+    /* Floating orb cursor trail handled via JS */
+    .orb {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--acid-green);
+      pointer-events: none;
+      z-index: 9998;
+      mix-blend-mode: screen;
+      transition: transform 0.1s;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      nav { padding: 1.5rem; }
+      .nav-links { display: none; }
+      .info-grid { grid-template-columns: 1fr; }
+      .cta-wrap { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+  </div>
+  <div class="scanlines"></div>
+
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <div class="orb" id="orb"></div>
+
+  <div class="page">
+
+    <nav>
+      <div class="nav-logo">BDAY.EXE</div>
+      <ul class="nav-links">
+        <li><a href="#">Szczegóły</a></li>
+        <li><a href="#">Mapa</a></li>
+        <li><a href="#">Potwierdzenie</a></li>
+      </ul>
+    </nav>
+
+    <main class="hero">
+      <p class="eyebrow">▶ Zaproszenie / Sezon urodzinowy 2025</p>
+
+      <div class="title-wrap">
+        <h1>
+          <span class="h1-main">Przyjdź na</span>
+          <span class="h1-accent" data-text="URODZINY">URODZINY</span>
+        </h1>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="info-label">Kiedy</div>
+          <div class="info-value">
+            14 CZERWCA
+            <span>Sobota / 21:00</span>
+          </div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">Gdzie</div>
+          <div class="info-value">
+            KLUB NEON
+            <span>ul. Przykładowa 7, Poznań</span>
+          </div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">Dress code</div>
+          <div class="info-value">
+            COKOLWIEK ŚWIECI
+            <span>Glitter mile widziany</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-wrap">
+        <a href="#" class="btn-primary">Potwierdzam obecność</a>
+        <a href="#" class="btn-secondary">Więcej info</a>
+      </div>
+    </main>
+
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <!-- Duplicated for infinite loop -->
+        <span class="ticker-item">URODZINOWA TRANSMISJA<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">14 CZERWCA<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">KLUB NEON, POZNAŃ<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">DRZWI OTWIERAMY O 21:00<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">ZAKAZ NUDY<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">URODZINOWA TRANSMISJA<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">14 CZERWCA<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">KLUB NEON, POZNAŃ<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">DRZWI OTWIERAMY O 21:00<span class="ticker-dot">✦</span></span>
+        <span class="ticker-item">ZAKAZ NUDY<span class="ticker-dot">✦</span></span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Cursor orb trail
+    const orb = document.getElementById('orb');
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let ox = mx, oy = my;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX;
+      my = e.clientY;
+    });
+
+    const orbColors = ['#b6ff00', '#ff2d78', '#00f0ff', '#ff6a00'];
+    let colorIdx = 0;
+    let lastColor = Date.now();
+
+    function animateOrb() {
+      ox += (mx - ox) * 0.12;
+      oy += (my - oy) * 0.12;
+      orb.style.left = (ox - 3) + 'px';
+      orb.style.top  = (oy - 3) + 'px';
+
+      if (Date.now() - lastColor > 600) {
+        colorIdx = (colorIdx + 1) % orbColors.length;
+        orb.style.background = orbColors[colorIdx];
+        orb.style.boxShadow = `0 0 10px ${orbColors[colorIdx]}`;
+        lastColor = Date.now();
+      }
+      requestAnimationFrame(animateOrb);
+    }
+    animateOrb();
+
+    // Subtle hover parallax on blobs
+    document.addEventListener('mousemove', e => {
+      const cx = (e.clientX / window.innerWidth  - 0.5) * 30;
+      const cy = (e.clientY / window.innerHeight - 0.5) * 30;
+      document.querySelectorAll('.blob').forEach((b, i) => {
+        const factor = (i % 2 === 0) ? 1 : -1;
+        b.style.transform = `translate(${cx * factor}px, ${cy * factor}px)`;
+      });
+    });
+  </script>
+</body>
+</html>
